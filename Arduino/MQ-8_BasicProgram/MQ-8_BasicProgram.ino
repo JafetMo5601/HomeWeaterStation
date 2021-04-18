@@ -1,5 +1,5 @@
 const int AOpin=0;
-const int DOpin=8;
+const int DOpin=7;
 int limit;
 int value;
 
@@ -20,5 +20,5 @@ void loop()
   } else {
     Serial.println("The limit of hydrogen allowed was reached!\n");
   }
-  delay(1000);
+  delay(2000);
 }

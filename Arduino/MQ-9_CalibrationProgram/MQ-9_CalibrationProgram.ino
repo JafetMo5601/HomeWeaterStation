@@ -23,5 +23,5 @@ void loop() {
   Serial.println("V");
   Serial.print("R0 = "); 
   Serial.println(R0); 
-  delay(1000); 
+  delay(2000); 
 }

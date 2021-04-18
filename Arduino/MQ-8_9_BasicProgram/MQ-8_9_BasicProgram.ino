@@ -1,7 +1,7 @@
 const int MQ8_AOpin=0;
 const int MQ9_AOpin=1;
-const int MQ8_DOpin=8;
-const int MQ9_DOpin=9;
+const int MQ8_DOpin=7;
+const int MQ9_DOpin=6;
 int limit;
 int value;
 
@@ -47,5 +47,5 @@ void loop()
   } else if (alarm == 1){
     Serial.println("The limit of MO allowed was reached!\n\n");
   }
-  delay(1000);
+  delay(2000);
 }

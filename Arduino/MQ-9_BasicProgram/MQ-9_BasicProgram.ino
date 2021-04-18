@@ -1,4 +1,4 @@
-const int DO = 9; 
+const int DO = 6; 
  
 void setup() { 
   Serial.begin(9600); 
@@ -28,5 +28,5 @@ void loop() {
   } else if (alarm == 1){
     Serial.println("The limit of MO allowed was reached!\n");
   }
-  delay(1000);
+  delay(2000);
 }
