@@ -1,50 +1,26 @@
-//#include <SPI.h>
-//#include <nRF24L01.h>
-//#include <RF24.h>
-//
-//RF24 radio(9, 8);
-//
-//const byte address[6] = "00001";
-//
-//void setup()
-//{
-//  radio.begin();
-//  radio.openWritingPipe(address);
-//  radio.stopListening();
-//}
-//void loop()
-//{
-//  const char text[] = "Hello World";
-//  radio.write(&text, sizeof(text));
-//  delay(1000);
-//}
-
-//Include Libraries
-#include <SPI.h>
 #include <nRF24L01.h>
 #include <RF24.h>
+#include <RF24_config.h>
+#include <SPI.h>
 
-//create an RF24 object
-RF24 radio(9, 8);  // CE, CSN
+#define MQ2pin (0)
+int smoke[3];
 
-//address through which two modules communicate.
-const byte address[6] = "00001";
+RF24 radio(9, 8);
 
-void setup()
+const uint64_t pipe = 0xE8E8F0F0E1LL;
+int MQ2_SensorValue;
+
+void setup(void)
 {
+  Serial.begin(9600);
   radio.begin();
-  
-  //set the address
-  radio.openWritingPipe(address);
-  
-  //Set module as transmitter
-  radio.stopListening();
+  radio.openWritingPipe(pipe);
 }
 void loop()
 {
-  //Send message to receiver
-  const char text[] = "Hello World";
-  radio.write(&text, sizeof(text));
-  
-  delay(1000);
+  MQ2_SensorValue = analogRead(MQ2pin);
+  smoke[0] = MQ2_SensorValue;
+  radio.write(smoke, 3);
+  delay(2000);
 }

@@ -1,62 +1,114 @@
-//#include <SPI.h>
-//#include <nRF24L01.h>
-//#include <RF24.h>
-//
-//RF24 radio(9, 8);
-//
-//const byte address[6] = "00001";
-//
-//void setup()
-//{
-//  while (!Serial);
-//    Serial.begin(9600); 
-//  radio.begin();
-//  radio.openReadingPipe(0, address);
-//  radio.startListening();
-//}
-//
-//void loop()
-//{
-//  if (radio.available())
-//  {
-//    char text[32] = {0};
-//    radio.read(&text, sizeof(text));
-//    Serial.println(text);
-//  }
-//}
-
-//Include Libraries
-#include <SPI.h>
 #include <nRF24L01.h>
 #include <RF24.h>
+#include <RF24_config.h>
+#include <SPI.h>
 
-//create an RF24 object
-RF24 radio(9, 8);  // CE, CSN
+const uint64_t pipe = 0xE8E8F0F0E1LL;
+const int MQ8_AOpin=0;
+const int MQ9_AOpin=1;
+const int MQ8_DOpin=7;
+const int MQ9_DOpin=6;
+const float R0 = 0.11;
 
-//address through which two modules communicate.
-const byte address[6] = "00001";
+int smoke[3];
 
-void setup()
+RF24 radio(9, 8);
+
+void setup(void)
 {
-  while (!Serial);
-    Serial.begin(9600);
+  Serial.begin(9600); 
   
   radio.begin();
-  
-  //set the address
-  radio.openReadingPipe(0, address);
-  
-  //Set module as receiver
+  radio.openReadingPipe(1, pipe);
   radio.startListening();
+
+  pinMode(MQ8_DOpin, INPUT);
+  pinMode(MQ9_DOpin, INPUT);
 }
 
-void loop()
+int getMQ8Values(){
+  int value = analogRead(MQ8_AOpin);
+  return value;
+}
+
+void getMQ8Alarm()
 {
-  //Read the data if available in buffer
+  int limit = digitalRead(MQ8_DOpin);
+  MQ8Alarm(limit);  
+}
+
+void MQ8Alarm(int limitToCheck)
+{
+  if (limitToCheck == 0){
+    Serial.println("The levels of hydrogen are normal.\n");
+  } else {
+    Serial.println("The limit of hydrogen allowed was reached!\n");
+  }
+}
+
+int getSensorVoltMQ9(){
+  float sensor_volt; 
+  int sensorValue = analogRead(A1); 
+  sensor_volt = ((float)sensorValue / 1024) * 5.0; 
+  return sensor_volt;
+}
+
+int getRatioMQ9()
+{
+  float sensor_volt = getSensorVoltMQ9();
+  float RS_gas; 
+  float ratio; 
+  RS_gas = (5.0 - sensor_volt) / sensor_volt;
+  ratio = RS_gas / R0;
+  return ratio;
+}
+
+void getMQ9Alarm()
+{
+  int alarm = 0;
+  alarm = digitalRead(MQ9_DOpin); 
+  MQ9Alarm(alarm);
+}
+
+void MQ9Alarm(int alarmToCheck){
+  if (alarmToCheck == 0){
+    Serial.println("The levels of MO are normal.\n");
+  } else if (alarmToCheck == 1){
+    Serial.println("The limit of MO allowed was reached!\n");
+  }
+}
+
+void printOutput()
+{
+  int value = getMQ8Values();
+  Serial.print("The current measure of hydrogen is: ");
+  Serial.print(value);
+  Serial.println(" ppm.");
+  getMQ8Alarm();
+
+  int sensor_volt = getSensorVoltMQ9();
+  int ratio = getRatioMQ9();
+  Serial.print("Sensor_volt = "); 
+  Serial.println(sensor_volt); 
+  Serial.print("Rs/R0 = "); 
+  Serial.println(ratio); 
+  getMQ9Alarm();
+}
+
+void loop(void)
+{
   if (radio.available())
   {
-    char text[32] = {0};
-    radio.read(&text, sizeof(text));
-    Serial.println(text);
+    radio.read(&smoke[0], 3);
+    Serial.print("\n\nThe current measure of smoke is: ");
+    Serial.print(smoke[0]);
+    Serial.print(" ppm."); 
+    if(smoke[0] > 500)
+    {
+      Serial.print(" | Smoke detected!");
+    }
+    Serial.println("\n");
   }
+  printOutput();
+  delay(2000);
 }
