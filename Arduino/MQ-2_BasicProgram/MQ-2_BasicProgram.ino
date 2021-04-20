@@ -1,6 +1,6 @@
 #define MQ2pin (0)
 
-float sensorValue;  //variable to store sensor value
+float sensorValue;
 
 void setup()
 {
